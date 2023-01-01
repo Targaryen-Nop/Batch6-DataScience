@@ -44,3 +44,76 @@ error <- p_mpg - test_data$mpg
 
 ## 5.save model
 saveRDS(model,"LinearReg_model.RDS")
+
+# Classification
+data("PimaIndiansDiabetes")
+df <- PimaIndiansDiabetes
+head(df)
+
+# Target: diabetes
+glimpse(df)
+
+df %>% 
+  count(diabetes) %>%
+  mutate(pct = n/sum(n))
+
+mean(complete.cases(df))
+
+# Build Model
+split_data <- train_test_split(df)
+train_data <- split_data[[1]]
+test_data <- split_data[[2]]
+
+set.seed(42)
+crtl <- trainControl(method="cv",
+                     number = 5,
+                     verboseIter = T)
+
+## build knn model
+model <- train(diabetes ~ ., 
+               data = train_data,
+               method = "knn",
+               metric = "Accuracy",
+               trControl = ctrl)
+
+p <- predict(model, newdata=test_data)
+
+mean(p == test_data$diabetes)
+
+## build another model
+set.seed(42)
+rf_model <- train(diabetes ~ ., 
+               data = train_data,
+               method = "rf",
+               metric = "Accuracy",
+               trControl = ctrl)
+
+p2 <- predict(rf_model, newdata=test_data)
+
+mean(p2 == test_data$diabetes)
+
+
+## build decision tree model
+set.seed(42)
+tree_model <- train(diabetes ~ ., 
+                  data = train_data,
+                  method = "rpart",
+                  metric = "Accuracy",
+                  trControl = ctrl)
+
+p3 <- predict(tree_model, newdata=test_data)
+
+mean(p3 == test_data$diabetes)
+
+
+## build logistic regression model
+set.seed(42)
+logit_model <- train(diabetes ~ ., 
+                    data = train_data,
+                    method = "glm",
+                    metric = "Accuracy",
+                    trControl = ctrl)
+
+p4 <- predict(logit_model, newdata=test_data)
+
+mean(p4 == test_data$diabetes)
